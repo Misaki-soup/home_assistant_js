@@ -19,7 +19,51 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+coveragefile:///home/misaki/programming/nyx-js/node_modules/together-ai/core/error.mjs:36
+
+            return new BadRequestError(status, error, message, headers);
+
+                   ^
+
+BadRequestError: 400 {"id":"oxzH5jd-z1gNr-a32220e75ef8568d","error":{"message":"Invalid JSON data: Failed to deserialize the JSON body into the target type: messages[0][0]: invalid type: map, expected variant identifier at line 1 column 136","type":"invalid_request_error","param":null,"code":null}}
+
+    at APIError.generate (file:///home/misaki/programming/nyx-js/node_modules/together-ai/core/error.mjs:36:20)
+
+    at Together.makeStatusError (file:///home/misaki/programming/nyx-js/node_modules/together-ai/client.mjs:159:32)
+
+    at Together.makeRequest (file:///home/misaki/programming/nyx-js/node_modules/together-ai/client.mjs:301:30)
+
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+    at async assistent (file:///home/misaki/programming/nyx-js/agent.js:45:20)
+
+    at async file:///home/misaki/programming/nyx-js/agent.js:64:3 {
+
+  status: 400,
+
+  headers: Headers {},
+
+  error: {
+
+    id: 'oxzH5jd-z1gNr-a32220e75ef8568d',
+
+    error: {
+
+      message: 'Invalid JSON data: Failed to deserialize the JSON body into the target type: messages[0][0]: invalid type: map, expected variant identifier at line 1 column 136',
+
+      type: 'invalid_request_error',
+
+      param: null,
+
+      code: null
+
+    }
+
+  }
+
+}
+
+Node.js v24.19.0'
 *.lcov
 
 # nyc test coverage
@@ -143,3 +187,4 @@ vite.config.ts.timestamp-*
 .vite/
 
 roadmap.md
+/data
