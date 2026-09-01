@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import fs from "fs";
 import * as yaml from "js-yaml";
 import Together from "together-ai";
-import readline from "readline/promises";
 import { get_short_memory, write_to_memory } from "./memory.js";
 
 //init
@@ -26,14 +25,6 @@ try {
   console.log(`Error on loading config: ${err}`);
 }
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-rl.on("close", () => {
-  console.log("Programm has been closed");
-});
-
 //funcs
 async function assistent(message) {
   const history = get_short_memory();
@@ -53,13 +44,7 @@ async function assistent(message) {
   console.log(`Agent: ${answer}`);
   history.push({ role: response.choices[0].message.role, content: answer });
   write_to_memory(history);
+  return answer;
 }
 
-while (true) {
-  let input = await rl.question("User: ");
-  if (input === "q" || input === "quit") {
-    rl.close();
-    break;
-  }
-  await assistent(input);
-}
+export { assistent };
