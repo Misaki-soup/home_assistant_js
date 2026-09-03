@@ -1,5 +1,6 @@
 import express from "express";
 import { assistent } from "./agent.js";
+import { get_short_memory } from "./memory.js";
 import cors from "cors";
 
 const app = express();
@@ -13,6 +14,10 @@ app.post("/chat", async (req, res) => {
   res.json({ reply: answer });
 });
 
+app.get("/chat/history", async (req, res) => {
+  const answer = get_short_memory();
+  res.json({ reply: answer });
+});
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
