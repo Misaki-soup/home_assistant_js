@@ -1,5 +1,5 @@
 import { useState } from "react";
-//import "./App.css";
+import "./App.css";
 
 function App() {
   const [input, setInput] = useState("");
@@ -11,7 +11,7 @@ function App() {
       headers: { "Content-Type": "application/JSON" },
     });
     const data = await req.json();
-    setHistory(data);
+    setHistory(data.reply);
   };
 
   const handleInput = async () => {
@@ -31,20 +31,36 @@ function App() {
 
   return (
     <>
-      <div>
-        {history.reply &&
-          history.reply.map((msg, index) => <p key={index}>{msg.content}</p>)}
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleInput();
-              getHistory();
-            }
-          }}
-        />
-        <button onClick={handleInput}>AAAAAAAAAAA</button>
+      <div className="nav"></div>
+      <div className="showcase">
+        <div className="chat_window">
+          <div className="chat">
+            {history &&
+              history
+                .filter((msg) => msg.role !== "system")
+                .map((msg, index) => (
+                  <p className={msg.role} key={index}>
+                    {msg.content}
+                  </p>
+                ))}
+          </div>
+        </div>
+        <div className="input">
+          <textarea
+            className="textik"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={async (e) => {
+              if (e.key === "Enter") {
+                await handleInput();
+                await getHistory();
+              }
+            }}
+          />
+          <button className="inputButton" onClick={handleInput}>
+            Huh?
+          </button>
+        </div>
       </div>
     </>
   );
