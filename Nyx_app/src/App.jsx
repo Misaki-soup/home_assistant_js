@@ -23,26 +23,40 @@ function App() {
   }, []);
 
   const handleInput = async () => {
-    if (input.trim() !== "") {
+    const question = input;
+    setInput("");
+    if (question.trim() !== "") {
       const req = await fetch("http://localhost:3000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/JSON" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: question }),
       });
+
       let status = req.status === 200 ? "successful call" : "call failed";
       console.log(status);
       const data = await req.json();
       console.log(data.reply);
       //do the whole thing with messages. show the history e.t.c. first function to store it. then the showcase on page fix extraction from the memory of the chat
-
-      setInput("");
     }
   };
 
   return (
     <>
-      <div className="nav"></div>
-      <div className="sep"></div>
+      <div className="nav">
+        <div className="buttons_nav">
+          <div className="new_chat"></div>
+        </div>
+        <div className="sep_h"></div>
+        <div className="history">
+          <div className="category_name">
+            <span className="s_names">Chats</span>
+          </div>
+          <div className="chats"></div>
+        </div>
+        <div className="sep_h"></div>
+        <div className="user_settings"></div>
+      </div>
+      <div className="sep_w"></div>
       <div className="showcase">
         <div className="chat_window">
           <div className="chat">
@@ -69,7 +83,12 @@ function App() {
               }
             }}
           />
-          <button className="inputButton" onClick={handleInput}>
+          <button
+            className="inputButton"
+            onClick={async () => {
+              (await handleInput(), await getHistory());
+            }}
+          >
             Huh?
           </button>
         </div>
