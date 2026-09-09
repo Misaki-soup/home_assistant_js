@@ -5,8 +5,7 @@ import Together from "together-ai";
 import {
   get_short_memory,
   write_to_memory,
-  clear_history,
-  save_to_longmemory,
+  clear_chat,
   optimize,
 } from "./memory.js";
 
@@ -34,15 +33,16 @@ try {
 //funcs
 async function assistent(message) {
   if (message === "/clear") {
-    clear_history();
+    clear_chat();
     console.log("cleared");
     return "History cleared";
   }
   const history = get_short_memory();
   const system_prompt = { role: "system", content: config.system_prompt };
+  let start;
   if (history.length === 0) {
     history.push(system_prompt);
-    const start = true;
+    start = true;
   }
   history.push({ role: "user", content: message });
   const response = await client.chat.completions.create({
@@ -55,10 +55,13 @@ async function assistent(message) {
   const answer = response.choices[0].message.content;
   console.log(`Agent: ${answer}`);
   history.push({ role: response.choices[0].message.role, content: answer });
-  write_to_memory(history);
   if (start) {
-    optimize(2);
+    optimize(2, history).catch((err) =>
+      console.log("AAA error on file name", err),
+    );
   }
+  write_to_memory(history);
+
   let tokens = 0;
   try {
     tokens = response.usage.total_tokens;
@@ -67,23 +70,23 @@ async function assistent(message) {
     console.log("Failed to count tokens");
   }
   if (tokens >= 80000) {
-    save_to_longmemory();
     write_to_memory(optimize(1));
   }
   return answer;
 }
 
 async function helper(history, options) {
-  const message = [];
-  message.push({ role: "user", content: history });
+  const messages = [
+    { role: "system", content: options },
+    ...history.filter((m) => m.role !== "system"),
+  ];
+
   const response = await client.chat.completions.create({
-    system_prompt: optimize(option),
     model: "Prism-ML/Ternary-Bonsai-27B",
-    messages: message,
+    messages: messages,
     temperature: config.temperature,
   });
   const shortened_context = response.choices[0].message.content;
-  console.log("memory shortened");
   const context = [{ role: "system", content: config.system_prompt }];
   context.push({
     role: response.choices[0].message.role,

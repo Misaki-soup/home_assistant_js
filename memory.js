@@ -7,6 +7,7 @@ const file_path = fileURLToPath(import.meta.url);
 const dir_name = path.dirname(file_path);
 const data_dir = path.join(dir_name, "data");
 fs.mkdirSync(data_dir, { recursive: true });
+let current_chat = null;
 
 function check_recent() {
   const file = path.join(data_dir, "recent.json");
@@ -32,7 +33,6 @@ function get_short_memory() {
 
 function write_to_memory(conv) {
   const data = [];
-
   try {
     const old_content = fs.readFileSync(check_recent(), "utf8");
     const old_data = JSON.parse(old_content);
@@ -50,14 +50,14 @@ function write_to_memory(conv) {
     }
   }
   fs.writeFileSync(check_recent(), JSON.stringify(data));
+  save_to_longmemory(data);
 }
 
-function clear_history() {
+function clear_chat() {
   fs.writeFileSync(check_recent(), "");
 }
 
-function optimize(option) {
-  const history = get_short_memory();
+async function optimize(option, history) {
   const sum_prompt = `You are a conversation-history compressor. You are NOT chatting with the
 user — you are given a chunk of past conversation turns and must output a
 compact summary that preserves everything a future turn would need, while
@@ -117,28 +117,52 @@ One line. The title only.`;
   switch (option) {
     case 1: {
       //summary
-      const meta = { sys_prompt: sum_prompt };
-      return helper(history, meta);
+      const meta = sum_prompt;
+      return await helper(history, meta);
       break;
     }
     case 2: {
       //chat name
-      const meta = { sys_prompt: file_name_prompt };
-      return helper(history, meta);
+      const meta = file_name_prompt;
+      const name = await helper(history, meta);
+      current_chat = name.at(-1).content;
+      return current_chat;
       break; //figure out to give a name to file etc
     }
   }
 }
 
-function save_to_longmemory() {
-  const history = get_short_memory();
-  return;
+function create_conv_file(f_name) {
+  const file = path.join(data_dir, `${f_name}.json`);
+  if (!fs.existsSync(file)) {
+    fs.writeFileSync(file, "[]");
+  }
+  return file;
+}
+
+function save_to_longmemory(conv) {
+  if (!current_chat) return;
+  fs.writeFileSync(create_conv_file(current_chat), JSON.stringify(conv));
+}
+
+function get_long_memory(file_name) {
+  // returns list of obj
+  try {
+    const content = fs.readFileSync(file_name, "utf8");
+    const data = JSON.parse(content);
+    return data;
+  } catch (err) {
+    console.log(
+      "Error hapened during extractiong of long  memory. It was empty or something bad happened",
+    );
+    return [];
+  }
 }
 
 export {
   get_short_memory,
   write_to_memory,
-  clear_history,
-  save_to_longmemory,
+  clear_chat,
   optimize,
+  get_long_memory,
 };

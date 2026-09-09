@@ -5,21 +5,32 @@ import ReactMarkdown from "react-markdown";
 function App() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState("");
+  const [c_names, setNames] = useState([]);
 
   const getHistory = async () => {
     console.log("called for history");
-    const req = await fetch("http://localhost:3000/chat/history", {
+    const req = await fetch("http://localhost:3000/chat/recent", {
       method: "GET",
       headers: { "Content-Type": "application/JSON" },
     });
     const data = await req.json();
     setHistory(data.reply);
   };
-
+  const getChatNames = async () => {
+    console.log("called for chats");
+    const req = await fetch("http://localhost:3000/conversations", {
+      method: "GET",
+      headers: { "Content-Type": "application/JSON" },
+    });
+    const names = await req.json();
+    setNames(names);
+  };
+  //Get buttons with conversation names. and add button for new chats
   useEffect(() => {
     //onload load of page
     // eslint-disable-next-line react-hooks/set-state-in-effect
     getHistory();
+    getChatNames();
   }, []);
 
   const handleInput = async () => {
@@ -51,7 +62,14 @@ function App() {
           <div className="category_name">
             <span className="s_names">Chats</span>
           </div>
-          <div className="chats"></div>
+          <div className="chats">
+            {c_names &&
+              c_names.map((chat, index) => (
+                <button className="chat_name navigation" key={index}>
+                  {chat}
+                </button>
+              ))}
+          </div>
         </div>
         <div className="sep_h"></div>
         <div className="user_settings"></div>
