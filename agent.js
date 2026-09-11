@@ -3,12 +3,12 @@ import fs from "fs";
 import * as yaml from "js-yaml";
 import Together from "together-ai";
 import {
-  get_short_memory,
+  get_memory,
   write_to_memory,
-  clear_chat,
   optimize,
+  chat_selector,
+  new_chat,
 } from "./memory.js";
-
 //init
 dotenv.config({ override: true });
 
@@ -32,12 +32,7 @@ try {
 
 //funcs
 async function assistent(message) {
-  if (message === "/clear") {
-    clear_chat();
-    console.log("cleared");
-    return "History cleared";
-  }
-  const history = get_short_memory();
+  const history = get_memory();
   const system_prompt = { role: "system", content: config.system_prompt };
   let start;
   if (history.length === 0) {
@@ -65,12 +60,12 @@ async function assistent(message) {
   let tokens = 0;
   try {
     tokens = response.usage.total_tokens;
-    console.log(tokens);
+    //console.log(tokens);
   } catch (err) {
     console.log("Failed to count tokens");
   }
   if (tokens >= 80000) {
-    write_to_memory(optimize(1));
+    write_to_memory(await optimize(1));
   }
   return answer;
 }

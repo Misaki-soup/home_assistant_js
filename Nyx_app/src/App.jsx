@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 
 function App() {
   const [input, setInput] = useState("");
-  const [history, setHistory] = useState("");
+  const [history, setHistory] = useState([]);
   const [c_names, setNames] = useState([]);
+  const bottomRef = useRef(null);
 
   const getHistory = async () => {
     console.log("called for history");
-    const req = await fetch("http://localhost:3000/chat/recent", {
+
+    const req = await fetch("http://localhost:3000/chat", {
       method: "GET",
       headers: { "Content-Type": "application/JSON" },
     });
@@ -23,7 +25,17 @@ function App() {
       headers: { "Content-Type": "application/JSON" },
     });
     const names = await req.json();
-    setNames(names);
+    setNames(names.answer);
+  };
+  const selectedChat = async (name) => {
+    console.log("selected chat ", name);
+    await fetch(`http://localhost:3000/chat/select/${name}`, {
+      method: "POST",
+    });
+  };
+  const new_chat = async () => {
+    console.log("new chat created");
+    await fetch("http://localhost:3000/new_chat", { method: "GET" });
   };
   //Get buttons with conversation names. and add button for new chats
   useEffect(() => {
@@ -32,12 +44,19 @@ function App() {
     getHistory();
     getChatNames();
   }, []);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history]);
 
   const handleInput = async () => {
     const question = input;
     setInput("");
     if (question.trim() !== "") {
-      const req = await fetch("http://localhost:3000/chat", {
+      setHistory((previous) => [
+        ...previous,
+        { role: "user", content: question },
+      ]);
+      const req = await fetch("http://localhost:3000/ask", {
         method: "POST",
         headers: { "Content-Type": "application/JSON" },
         body: JSON.stringify({ message: question }),
@@ -47,6 +66,10 @@ function App() {
       console.log(status);
       const data = await req.json();
       console.log(data.reply);
+      setHistory((previous) => [
+        ...previous,
+        { role: "assistant", content: data.reply },
+      ]);
       //do the whole thing with messages. show the history e.t.c. first function to store it. then the showcase on page fix extraction from the memory of the chat
     }
   };
@@ -55,7 +78,16 @@ function App() {
     <>
       <div className="nav">
         <div className="buttons_nav">
-          <div className="new_chat"></div>
+          <button
+            className="new_chat"
+            onClick={() => {
+              new_chat();
+              getHistory();
+              getChatNames();
+            }}
+          >
+            New Chat
+          </button>
         </div>
         <div className="sep_h"></div>
         <div className="history">
@@ -65,7 +97,14 @@ function App() {
           <div className="chats">
             {c_names &&
               c_names.map((chat, index) => (
-                <button className="chat_name navigation" key={index}>
+                <button
+                  className="chat_name navigation"
+                  key={index}
+                  onClick={async () => {
+                    await selectedChat(chat);
+                    await getHistory(chat);
+                  }}
+                >
                   {chat}
                 </button>
               ))}
@@ -86,6 +125,7 @@ function App() {
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ))}
+            <div ref={bottomRef} />
           </div>
         </div>
         <div className="input">
@@ -97,14 +137,13 @@ function App() {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 await handleInput();
-                await getHistory();
               }
             }}
           />
           <button
             className="inputButton"
             onClick={async () => {
-              (await handleInput(), await getHistory());
+              await handleInput();
             }}
           >
             Huh?
