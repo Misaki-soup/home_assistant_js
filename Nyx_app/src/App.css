@@ -143,6 +143,8 @@ code {
 }
 .chats{
   flex:1;
+  display: flex;
+  flex-direction: column;
 }
 
 .navigation{
@@ -156,3 +158,52 @@ code {
   background-color: var(--btn-hover);
 }
 .navigation:focus{  background-color: var(--btn-active);}
+
+.popup_menu button:hover{
+  background-color: var(--btn-hover);
+}
+.popup_menu button:focus{  background-color: var(--btn-active);}
+
+.chat_name{
+  font-size: small;
+  max-height:3dvh ;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+}
+.options{
+  margin-left: auto;
+  margin-right: 5%;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.name{
+  margin-left: 5%;
+  min-width: 0;
+  flex:1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.popup_menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+  width: 150px;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+
+}
+.popup_menu button{
+  padding: 5px 5px;
+}

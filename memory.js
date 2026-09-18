@@ -11,7 +11,9 @@ const dir_name = path.dirname(file_path);
 const data_dir = path.join(dir_name, "data");
 fs.mkdirSync(data_dir, { recursive: true });
 let current_chat = null;
+
 const files = () =>
+  //returns list
   fs
     .readdirSync(data_dir)
     .filter((f) => f.endsWith(".json") && f !== "temp.json")
@@ -161,6 +163,18 @@ function new_chat() {
   fs.writeFileSync(temp_chat(), "[]");
 }
 
+function rename(name) {
+  try {
+    fs.renameSync(
+      `${data_dir}/${current_chat}.json`,
+      `${data_dir}/${name}.json`,
+    );
+  } catch (err) {
+    console.log("failed to rename file,try again");
+    return "Fail";
+  }
+}
+
 export {
   get_memory,
   write_to_memory,
@@ -168,4 +182,5 @@ export {
   chat_selector,
   new_chat,
   files,
+  rename,
 };

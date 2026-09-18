@@ -1,3 +1,5 @@
+//name editing still doesnt work
+
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
@@ -7,6 +9,10 @@ function App() {
   const [history, setHistory] = useState([]);
   const [c_names, setNames] = useState([]);
   const bottomRef = useRef(null);
+  const outsideClick = useRef(null);
+  const [indexInUse, setIndex] = useState(null);
+  const [indexEdit, setIndexEdit] = useState(null);
+  const [editname, setEditName] = useState("");
 
   const getHistory = async () => {
     console.log("called for history");
@@ -37,6 +43,14 @@ function App() {
     console.log("new chat created");
     await fetch("http://localhost:3000/new_chat", { method: "GET" });
   };
+  const edit_name = async (name) => {
+    console.log("name edited");
+    await fetch(`http://localhost:3000/conversation/rename`, {
+      method: "POST",
+      headers: { "Content-Type": "application/JSON" },
+      body: JSON.stringify({ message: name }),
+    });
+  };
   //Get buttons with conversation names. and add button for new chats
   useEffect(() => {
     //onload load of page
@@ -48,6 +62,28 @@ function App() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history]);
 
+  useEffect(() => {
+    console.log("lol? ", indexEdit);
+
+    const handleClickOutside = (event) => {
+      const prev = outsideClick.current;
+      if (!outsideClick.current?.contains(event.target)) {
+        setIndexEdit(null);
+        console.log("haha. false");
+      } else {
+        outsideClick.current = prev;
+        setEditName(prev);
+      }
+    };
+
+    if (indexEdit !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [indexEdit]);
   const handleInput = async () => {
     const question = input;
     setInput("");
@@ -97,7 +133,7 @@ function App() {
           <div className="chats">
             {c_names &&
               c_names.map((chat, index) => (
-                <button
+                <div
                   className="chat_name navigation"
                   key={index}
                   onClick={async () => {
@@ -105,8 +141,48 @@ function App() {
                     await getHistory(chat);
                   }}
                 >
-                  {chat}
-                </button>
+                  {indexEdit === index ? (
+                    <input
+                      ref={outsideClick}
+                      value={editname}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter") {
+                          await edit_name((c_names[index] = editname));
+                          getChatNames();
+                          console.log(c_names);
+                          setIndexEdit(null);
+                        }
+                      }}
+                      autoFocus
+                    ></input>
+                  ) : (
+                    <a className="name">{chat}</a>
+                  )}
+                  <div className="options" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => {
+                        setIndex({ index });
+                        //console.log("im DEpressed", indexInUse, index);
+                      }}
+                    >
+                      :
+                    </button>
+                    {indexInUse?.index === index && (
+                      <div className="popup_menu">
+                        <button
+                          onClick={() => {
+                            setIndexEdit(index);
+                            setEditName(chat); // pre-fill with current name
+                            setIndex(null);
+                          }}
+                        >
+                          Rename
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
           </div>
         </div>

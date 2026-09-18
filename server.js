@@ -1,6 +1,12 @@
 import express from "express";
 import { assistent } from "./agent.js";
-import { get_memory, files, chat_selector, new_chat } from "./memory.js";
+import {
+  get_memory,
+  files,
+  chat_selector,
+  new_chat,
+  rename,
+} from "./memory.js";
 import cors from "cors";
 
 const app = express();
@@ -30,6 +36,12 @@ app.post("/chat/select/:name", (req, res) => {
 });
 app.get("/new_chat", (req, res) => {
   new_chat();
+});
+
+app.post("/conversation/rename", (req, res) => {
+  const message = req.body.message;
+  const answer = rename(message);
+  res.sendStatus(204);
 });
 
 app.listen(3000, () => {
