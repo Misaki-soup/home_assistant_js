@@ -1,2 +1,2 @@
 # home_assistant_js
-idk yet
+Personal AI assistant: Node.js, React, Electron (in progress)
